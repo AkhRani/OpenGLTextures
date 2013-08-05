@@ -1,8 +1,6 @@
-// OpenGLTexture1.cpp
+// OpenGLTexture2.cpp
 //
-// This is just about the simplest texturing example I can make.
-// This demo uses OpenGL Immediate Mode, and should work with
-// any version of OpenGL.
+// Simple texturing using vertex arrays (OpenGL 1.2)
 //
 #include "stdafx.h"
 
@@ -11,7 +9,11 @@
 
 #include <stdio.h>
 
-void onDisplay(void)
+typedef struct {
+    GLfloat x, y, tx, ty;
+} VertexInfo;
+
+void SetupTexture()
 {
     static GLubyte checkerboard[16] = {
         // The first byte is the lower-left texel
@@ -23,22 +25,31 @@ void onDisplay(void)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_RED, GL_UNSIGNED_BYTE, checkerboard);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+};
 
+void SetupArrays()
+{
+    VertexInfo triangle[3] = {
+        //   x,     y,   tx,   ty
+        { 0.0f,  1.0f, 0.5f, 1.0f}, // top
+        { 1.0f, -1.0f, 1.0f, 0.0f}, // bottom-right
+        {-1.0f, -1.0f, 0.0f, 0.0f}, // bottom-left
+    };
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(VertexInfo), &triangle[0].tx); 
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_FLOAT, sizeof(VertexInfo), &triangle[0].x); 
+}
+
+
+void onDisplay(void)
+{
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBegin(GL_TRIANGLES);
-    // Top
-    glTexCoord2f(0.5f, 1.0f);
-    glVertex2f(0.0f, 1.0f);
-
-    // bottom-right
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(1.0f, -1.0f);
-
-    // bottom-left
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(-1.0f, -1.0f);
-    glEnd();
+    SetupTexture();
+    SetupArrays();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glutSwapBuffers();
 }
@@ -56,6 +67,7 @@ int main(int argc, char *argv[])
     glutCreateWindow(argv[0]);
 
     glutDisplayFunc(onDisplay);
+    glutIdleFunc(onDisplay);
     glutKeyboardFunc(onKey);
 
     glEnable(GL_TEXTURE_2D);
