@@ -1,6 +1,6 @@
 // OpenGLTexture4.cpp
 //
-// Manually specifying mipmaps.
+// Generating different textures from the same data
 //
 #include "stdafx.h"
 
@@ -13,50 +13,28 @@ typedef struct {
     GLfloat x, y, tx, ty;
 } VertexInfo;
 
-#define TEXTURE_REPEAT  70
-#define TEXTURE_WIDTH   7
-#define TEXTURE_HEIGHT  7
+#define TEXTURE_WIDTH   4
+#define TEXTURE_HEIGHT  4
 
-void SetupTexture()
+void SetupTexture(GLenum format)
 {
-     // Notice extra byte added for alignment.
-    static GLubyte crossLevel0[8 * TEXTURE_HEIGHT] = {
+    static GLubyte checkerboard[TEXTURE_WIDTH * TEXTURE_HEIGHT] = {
         // The first byte is the lower-left texel
-        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0,
-        0x00, 0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0,
-        0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0,
-        0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0,
-        0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0,
-        0x00, 0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0,
-        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0,
+        0xff, 0x00, 0xff, 0x00,
+        0x00, 0xff, 0x00, 0xff,
+        0xff, 0x00, 0xff, 0x00,
+        0x00, 0xff, 0x00, 0xff,
     };
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, crossLevel0);
-
-    static GLubyte crossLevel1[4 * TEXTURE_HEIGHT/2] = {
-        0xff, 0x00, 0xff, 0, 
-        0x00, 0xff, 0x00, 0, 
-        0xff, 0x00, 0xff, 0, 
-    };
-    // Try changing GL_RED to GL_GREEN or GL_BLUE in the following line,
-    // and see what effect it has as you increase TEXTURE_REPEAT.
-    glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA8, TEXTURE_WIDTH/2, TEXTURE_HEIGHT/2, 0, GL_RED, GL_UNSIGNED_BYTE, crossLevel1);
-
-    static GLubyte crossLevel2[4 * TEXTURE_HEIGHT/4] = {
-        0x80, 0, 0, 0,
-    };
-    glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA8, TEXTURE_WIDTH/4, TEXTURE_HEIGHT/4, 0, GL_RED, GL_UNSIGNED_BYTE, crossLevel2);
-
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, format, GL_UNSIGNED_BYTE, checkerboard);
 };
 
 void SetupArrays()
 {
-    VertexInfo triangle[3] = {
-        //   x,     y,   tx,   ty
-        { 0.0f,  1.0f, TEXTURE_REPEAT / 2.0f, TEXTURE_REPEAT * 1.0f}, // top
-        { 1.0f, -1.0f, TEXTURE_REPEAT * 1.0f, 0.0f},                // bottom-right
-        {-1.0f, -1.0f, 0.0f, 0.0f},                                 // bottom-left
+    static VertexInfo triangle[3] = {
+        //   x,      y,   tx,   ty
+        { 0.0f,   0.5f, 0.5f, 1.0f}, // top
+        { -0.25f, 0.0f, 0.0f, 0.0f}, // bottom-left
+        { 0.25f,  0.0f, 1.0f, 0.0f}, // bottom-right
     };
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -68,10 +46,23 @@ void SetupArrays()
 
 void onDisplay(void)
 {
+    GLint mode;
+
     glClear(GL_COLOR_BUFFER_BIT);
 
-    SetupTexture();
     SetupArrays();
+    glMatrixMode(GL_MODELVIEW);
+
+    SetupTexture(GL_RED);
+    glTranslatef(-.75f, 0.f, 0.f);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    SetupTexture(GL_GREEN);
+    glTranslatef(0.5f, 0.f, 0.f);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    SetupTexture(GL_BLUE);
+    glTranslatef(0.5f, 0.f, 0.f);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glutSwapBuffers();
@@ -89,8 +80,10 @@ int main(int argc, char *argv[])
     glutInitWindowSize(480, 480);
     glutCreateWindow(argv[0]);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     glutDisplayFunc(onDisplay);
-    glutIdleFunc(onDisplay);
     glutKeyboardFunc(onKey);
 
     glEnable(GL_TEXTURE_2D);

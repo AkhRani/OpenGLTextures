@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{230E990F-5F3B-44A3-8557-0FEB8BEF35EE}</ProjectGuid>
+    <ProjectGuid>{EF0FAA4C-F690-42E5-8A64-EA8F029B99CC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>OpenGLTexture4</RootNamespace>
   </PropertyGroup>

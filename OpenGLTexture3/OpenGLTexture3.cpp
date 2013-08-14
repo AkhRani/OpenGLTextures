@@ -52,7 +52,7 @@ void SetupTexture()
 
 void SetupArrays()
 {
-    VertexInfo triangle[3] = {
+    static VertexInfo triangle[3] = {
         //   x,     y,   tx,   ty
         { 0.0f,  1.0f, TEXTURE_REPEAT / 2.0f, TEXTURE_REPEAT * 1.0f}, // top
         { 1.0f, -1.0f, TEXTURE_REPEAT * 1.0f, 0.0f},                // bottom-right
